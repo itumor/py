@@ -11,126 +11,16 @@ import time
 import json
 from typing import List, Set, Tuple
 from opensearchpy import OpenSearch, RequestsHttpConnection
-
-
-
-
-# create logger
-logger = logging.getLogger('taskcat_opensearch')
-now = datetime.now()
-dt_string = now.strftime("%Y-%m-%d_%H%M%S")
-logging.basicConfig(filename='testcat-{}.log'.format(dt_string), level=logging.INFO)
-# create console handler and set level to info
-ch = logging.StreamHandler()
-ch.setLevel(logging.INFO)
-
-# create formatter
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-
-# add formatter to ch
-ch.setFormatter(formatter)
-
-# add ch to logger
-logger.addHandler(ch)
-
-
-logger.info('log_test_start')
-
-
+from OpenSearch import *
+from logger import *
 
 
 ##opencase
+
 host = 'vpc-pcgtpjpuinupryhuhdng-jbmrtspwc3qe6oilrue4cwxcqq.eu-central-1.es.amazonaws.com' # cluster endpoint, for example: my-test-domain.us-east-1.es.amazonaws.com
 region = 'eu-central-1' # e.g. us-west-1
 
-credentials = boto3.Session().get_credentials()
-#auth = AWSV4SignerAuth(credentials, region)
-auth = ('master-user', 'RybfCQn!R1iHmB-^&.8q<1!DjTeDPgH_')
-#index_name = 'movies'
-
-client = OpenSearch(
-    hosts = [{'host': host, 'port': 443}],
-    http_auth = auth,
-    use_ssl = True,
-    verify_certs = True,
-    connection_class = RequestsHttpConnection
-)
-
-# Create an index with non-default settings.
-index_name = 'python-test-index'
-index_body = {
-  'settings': {
-    'index': {
-      'number_of_shards': 4
-    }
-  }
-}
-
-response = client.indices.create(index_name, body=index_body)
-logger.info('Creating index:')
-logger.info(response)
-
-# Add a document to the index.
-document = {
-  'title': 'Moneyball',
-  'director': 'Bennett Miller',
-  'year': '2011'
-}
-id = '1'
-
-response = client.index(
-    index = index_name,
-    body = document,
-    id = id,
-    refresh = True
-)
-
-logger.info('Adding document:')
-logger.info(response)
-
-# Search for the document.
-q = 'miller'
-query = {
-  'size': 5,
-  'query': {
-    'multi_match': {
-      'query': q,
-      'fields': ['title^2', 'director']
-    }
-  }
-}
-
-response = client.search(
-    body = query,
-    index = index_name
-)
-logger.info('Search results:')
-logger.info(response)
-
-# Delete the document.
-response = client.delete(
-    index = index_name,
-    id = id
-)
-
-logger.info('Deleting document:')
-logger.info(response)
-
-# Delete the index.
-idx_list = [x for x in client.indices.get_alias("*").keys() ]
-logger.info('List index:')
-logger.info(idx_list)
-
-delete_index= client.indices.delete(index=index_name, ignore=[400, 404])
-logger.info('Delete index:')
-logger.info(delete_index)
-
-idx_list = [x for x in client.indices.get_alias("*").keys() ]
-logger.info('List index:')
-logger.info(idx_list)
-
-
-##opencase
+OpenSearchConn(host,region,'master-user','RybfCQn!R1iHmB-^&.8q<1!DjTeDPgH_')
 
 
 ###case
@@ -223,7 +113,7 @@ else:
 
 ###case
 
-test = CFNTest.from_file(project_root='.', input_file='taskcatop.yml')
+#test = CFNTest.from_file(project_root='.', input_file='taskcatop.yml')
 #with test as stacks:
     # Calling 'with' or 'test.run()' will deploy the stacks.
 #    for stack in stacks:
