@@ -1,3 +1,4 @@
+from logger import *
 from taskcat.testing import CFNTest
 from taskcat._tui import TerminalPrinter
 from datetime import datetime
@@ -10,27 +11,6 @@ import botocore
 import time
 import json
 from typing import List, Set, Tuple
-from opensearchpy import OpenSearch, RequestsHttpConnection
-from OpenSearch import *
-from logger import *
-from ServiceCatalogConfig import *
-
-
-##opencase
-
-host = 'vpc-pcgtpjpuinupryhuhdng-jbmrtspwc3qe6oilrue4cwxcqq.eu-central-1.es.amazonaws.com' # cluster endpoint, for example: my-test-domain.us-east-1.es.amazonaws.com
-region = 'eu-central-1' # e.g. us-west-1
-
-Endpoint=GetDomain_Endpoint()
-logger.info(Endpoint)
-
-OpenSearchConn(host,region,'master-user','RybfCQn!R1iHmB-^&.8q<1!DjTeDPgH_')
-
-##opencase
-
-###case
-
-
 
 my_config = Config(
     # Optionally lets you specify a region other than your default.
@@ -40,6 +20,15 @@ my_config = Config(
 
 sc_client = boto3.client('servicecatalog')
 secrets_manager_client = boto3.client('secretsmanager')
+
+# Open Search Conn function
+def GetDomain_Endpoint(ProvisionedProductId):
+    response = sc_client.get_provisioned_product_outputs(
+    ProvisionedProductId = 'ProvisionedProductId'
+    )
+    
+
+
 
 
 ##response = sc_client.get_provisioned_product_outputs(
@@ -112,26 +101,3 @@ if b == a:
   logger.info("True")
 else:
   logger.info("False")
-
-
-
-
-###case
-
-#test = CFNTest.from_file(project_root='.', input_file='taskcatop.yml')
-#with test as stacks:
-    # Calling 'with' or 'test.run()' will deploy the stacks.
-#    for stack in stacks:
-#        logger.info(f"Testing {stack.name}")
-#        bucket_name = ""
-#        for output in stack.outputs:
-#            if output.key == "ScItemId":
-#                bucket_name = output.value
-#                logger.info(bucket_name)
-#                break
-        #assert "logs" in bucket_name
-        #assert stack.region.name in bucket_name
-       # logger.info(f"Created bucket: {bucket_name}")
-        #test.run()
-
-       
