@@ -27,7 +27,7 @@ def GetDomain_Endpoint(ProvisionedProductId):
     ProvisionedProductId = ProvisionedProductId
     )
     Domain_Endpoint = next(filter(lambda x: x['OutputKey'] == 'DomainEndpoint', response['Outputs']), None)
-    logger.info(Domain_Endpoint['OutputValue'])
+    ##logger.info(Domain_Endpoint['OutputValue'])
     return(Domain_Endpoint['OutputValue'])
 
 def GetDomain_username(ProvisionedProductId):
@@ -35,7 +35,7 @@ def GetDomain_username(ProvisionedProductId):
     ProvisionedProductId = ProvisionedProductId
     )
     DomainMasterSecret = next(filter(lambda x: x['OutputKey'] == 'DomainMasterSecret', response['Outputs']), None)
-    logger.info(DomainMasterSecret['OutputValue'])
+    #logger.info(DomainMasterSecret['OutputValue'])
     
     
     secret_response = secrets_manager_client.get_secret_value(
@@ -43,7 +43,7 @@ def GetDomain_username(ProvisionedProductId):
             )
     
     secret = json.loads(secret_response['SecretString'])
-    logger.info(secret['username'])
+    #logger.info(secret['username'])
     return(secret['username'])
 
 def GetDomain_password(ProvisionedProductId):
@@ -51,7 +51,7 @@ def GetDomain_password(ProvisionedProductId):
     ProvisionedProductId = ProvisionedProductId
     )
     DomainMasterSecret = next(filter(lambda x: x['OutputKey'] == 'DomainMasterSecret', response['Outputs']), None)
-    logger.info(DomainMasterSecret['OutputValue'])
+    #logger.info(DomainMasterSecret['OutputValue'])
     
     
     secret_response = secrets_manager_client.get_secret_value(
@@ -59,7 +59,7 @@ def GetDomain_password(ProvisionedProductId):
             )
     
     secret = json.loads(secret_response['SecretString'])
-    logger.info(secret['password'])
+    #logger.info(secret['password'])
     return(secret['password'])
 
 def GetDomain_Domain_name(ProvisionedProductId):
@@ -67,11 +67,11 @@ def GetDomain_Domain_name(ProvisionedProductId):
     ProvisionedProductId = ProvisionedProductId
     )
     OpenSearchArn = next(filter(lambda x: x['OutputKey'] == 'OpenSearchArn', response['Outputs']), None)
-    logger.info(OpenSearchArn['OutputValue'])
+    #logger.info(OpenSearchArn['OutputValue'])
     
     OpenSearch_Arn=OpenSearchArn['OutputValue']
     Domain_name=OpenSearch_Arn.split("domain/",1)[1]
-    logger.info(OpenSearch_Arn.split("domain/",1)[1])
+    #logger.info(OpenSearch_Arn.split("domain/",1)[1])
     return(Domain_name)
 
 def GetDomain_EngineVersion(Domain_name):
@@ -83,8 +83,8 @@ def GetDomain_EngineVersion(Domain_name):
        # ARN='arn:aws:es:eu-central-1:600027353764:domain/pcgtpjpuinupryhuhdng'
     )
     
-    logger.info('\Describe Domain:')
-    logger.info(response['DomainStatus']['EngineVersion'])
+    #logger.info('\Describe Domain:')
+    #logger.info(response['DomainStatus']['EngineVersion'])
     return(response['DomainStatus']['EngineVersion'])
 
 
@@ -94,6 +94,6 @@ def GetDomain_InstanceCount(Domain_name):
         DomainName=Domain_name
     )
     
-    logger.info('\Describe Domain Config:')
-    logger.info(response['DomainConfig']['ClusterConfig']['Options']['InstanceCount'])
+    #logger.info('\Describe Domain Config:')
+    #logger.info(response['DomainConfig']['ClusterConfig']['Options']['InstanceCount'])
     return(response['DomainConfig']['ClusterConfig']['Options']['InstanceCount'])
