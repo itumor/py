@@ -7,7 +7,7 @@ Check that python 3.10 is installed on your system.
 * sudo yum -y update 
 * sudo amazon-linux-extras install python3.8
 
-* move to dir  `cd /home/ec2-user/environment/env/py`
+* move to dir  `cd /home/ec2-user/environment/env/`
 
 * Create virtualenv: `virtualenv -p /usr/bin/python3.8  venv`
  
