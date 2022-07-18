@@ -12,18 +12,15 @@ import json
 from typing import List, Set, Tuple
 from opensearchpy import OpenSearch, RequestsHttpConnection
 
-test = CFNTest.from_file(project_root='.', input_file='taskcatop.yml')
+
 
 
 # create logger
 logger = logging.getLogger('taskcat_opensearch')
-#logger.setLevel(logging.INFO)
-#logging.basicConfig(filename='example.log')
 now = datetime.now()
 dt_string = now.strftime("%Y-%m-%d_%H%M%S")
-
 logging.basicConfig(filename='testcat-{}.log'.format(dt_string), level=logging.INFO)
-# create console handler and set level to debug
+# create console handler and set level to info
 ch = logging.StreamHandler()
 ch.setLevel(logging.INFO)
 
@@ -36,14 +33,11 @@ ch.setFormatter(formatter)
 # add ch to logger
 logger.addHandler(ch)
 
-# 'application' code
-#logger.debug('debug message')
-#logger.info('info message')
-#logger.warning('warn message')
-#logger.error('error message')
-#logger.critical('critical message')
-logger.propagate = False
-#logger.info('log_test')
+
+logger.info('log_test_start')
+
+
+
 
 ##opencase
 host = 'vpc-pcgtpjpuinupryhuhdng-jbmrtspwc3qe6oilrue4cwxcqq.eu-central-1.es.amazonaws.com' # cluster endpoint, for example: my-test-domain.us-east-1.es.amazonaws.com
@@ -73,7 +67,7 @@ index_body = {
 }
 
 response = client.indices.create(index_name, body=index_body)
-logger.info('\nCreating index:')
+logger.info('Creating index:')
 logger.info(response)
 
 # Add a document to the index.
@@ -91,7 +85,7 @@ response = client.index(
     refresh = True
 )
 
-logger.info('\nAdding document:')
+logger.info('Adding document:')
 logger.info(response)
 
 # Search for the document.
@@ -110,7 +104,7 @@ response = client.search(
     body = query,
     index = index_name
 )
-logger.info('\nSearch results:')
+logger.info('Search results:')
 logger.info(response)
 
 # Delete the document.
@@ -119,20 +113,20 @@ response = client.delete(
     id = id
 )
 
-logger.info('\nDeleting document:')
+logger.info('Deleting document:')
 logger.info(response)
 
 # Delete the index.
 idx_list = [x for x in client.indices.get_alias("*").keys() ]
-logger.info('\nList index:')
+logger.info('List index:')
 logger.info(idx_list)
 
 delete_index= client.indices.delete(index=index_name, ignore=[400, 404])
-logger.info('\nDelete index:')
+logger.info('Delete index:')
 logger.info(delete_index)
 
 idx_list = [x for x in client.indices.get_alias("*").keys() ]
-logger.info('\nList index:')
+logger.info('List index:')
 logger.info(idx_list)
 
 
@@ -229,7 +223,7 @@ else:
 
 ###case
 
-
+test = CFNTest.from_file(project_root='.', input_file='taskcatop.yml')
 #with test as stacks:
     # Calling 'with' or 'test.run()' will deploy the stacks.
 #    for stack in stacks:
