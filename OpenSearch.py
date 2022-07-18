@@ -85,4 +85,5 @@ def OpenSearchConn(host,region,user,password):
     idx_list = [x for x in client.indices.get_alias("*").keys() ]
     logger.info('List index:')
     logger.info(idx_list)
+    return True 
     

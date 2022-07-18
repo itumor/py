@@ -26,8 +26,7 @@ def OpenSearchConnTest(ProvisionedProductId):
     logger.info(username)
     password= GetDomain_password('pp-aywt5clfexwze')
     logger.info(password)
-    
-    OpenSearchConn(Endpoint,region,username,password)
+    assert OpenSearchConn(Endpoint,region,username,password) == True,"issue was the OpenSearch connection"
 
 
 
@@ -37,8 +36,10 @@ def TestCase(ProvisionedProductId):
     logger.info(Domain_name)
     EngineVersion=GetDomain_EngineVersion(Domain_name)
     logger.info(EngineVersion)
+    assert EngineVersion == 'OpenSearch_1.2' ,"issue was the Engine Version"
     InstanceCount=GetDomain_InstanceCount(Domain_name)
     logger.info(InstanceCount)
+    assert InstanceCount == 2 ,"issue was the number of Instance"
     
     a = 2
     b = InstanceCount
@@ -79,13 +80,13 @@ with test as stacks:
             if output.key == "ScItemId":
                 service_catalog_provided_item_id = output.value
         if stack.name.startswith('tCaT-iaws-product-opensearch-opensearch1Instances'):  
-                LOG.info(f"Testing {stack.name}")
+                logger.info(f"Testing {stack.name}")
                 OpenSearchConnTest(service_catalog_provided_item_id)
                 TestCase(service_catalog_provided_item_id)
-                LOG.info(f"Testing {stack.name} done!")
+                logger.info(f"Testing {stack.name} done!")
         if stack.name.startswith('tCaT-iaws-product-opensearch-opensearch2Instances'):
-                LOG.info(f"Testing {stack.name}")
+                logger.info(f"Testing {stack.name}")
                 OpenSearchConnTest(service_catalog_provided_item_id)
                 TestCase(service_catalog_provided_item_id)
-                LOG.info(f"Testing {stack.name} done!")
+                logger.info(f"Testing {stack.name} done!")
 logger.info('done')
