@@ -59,20 +59,41 @@ else:
 
 ###case
 
-test = CFNTest.from_file(project_root='.', input_file='taskcatop.yml')
-with test as stacks:
+#test = CFNTest.from_file(project_root='.', input_file='taskcatop.yml')
+#with test as stacks:
     # Calling 'with' or 'test.run()' will deploy the stacks.
-    for stack in stacks:
-        logger.info(f"Testing {stack.name}")
-        bucket_name = ""
-        for output in stack.outputs:
-            if output.key == "ScItemId":
-                bucket_name = output.value
-                logger.info(bucket_name)
+#    for stack in stacks:
+#        logger.info(f"Testing {stack.name}")
+#        bucket_name = ""
+#        for output in stack.outputs:
+#            if output.key == "ScItemId":
+#                bucket_name = output.value
+#                logger.info(bucket_name)
 #                break
         #assert "logs" in bucket_name
         #assert stack.region.name in bucket_name
        # logger.info(f"Created bucket: {bucket_name}")
         #test.run()
 
-       
+        
+test = CFNTest.from_file(project_root='.', input_file='taskcatop.yml')
+logger.info("Starting")
+with test as stacks:
+    test.report(output_directory)
+        
+    for stack in stacks:
+        for output in stack.outputs:
+            if output.key == "ScItemId":
+                service_catalog_provided_item_id = output.value
+        if stack.name.startswith('tCaT-iaws-product-opensearch-opensearch1Instances'):  
+                LOG.info(f"Testing {stack.name}")
+                test_docdb1Instance()
+                test_read_write(service_catalog_provided_item_id)
+                LOG.info(f"Testing {stack.name} done!")
+        if stack.name.startswith('tCaT-iaws-product-opensearch-opensearch2Instances'):
+                LOG.info(f"Testing {stack.name}")
+                test_docdb2Instances()
+                test_read_write(service_catalog_provided_item_id)
+                LOG.info(f"Testing {stack.name} done!")
+            
+logger.info('done')
