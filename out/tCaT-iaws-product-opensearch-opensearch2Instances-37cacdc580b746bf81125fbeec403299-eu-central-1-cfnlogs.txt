@@ -1,0 +1,21 @@
+-----------------------------------------------------------------------------
+Region: eu-central-1
+StackName: tCaT-iaws-product-opensearch-opensearch2Instances-37cacdc580b746bf81125fbeec403299
+*****************************************************************************
+ResourceStatusReason:  
+Stack launch was successful
+*****************************************************************************
+*****************************************************************************
+Events:  
+TimeStamp                         ResourceStatus      ResourceType                                           LogicalResourceId                                                                   ResourceStatusReason
+--------------------------------  ------------------  -----------------------------------------------------  ----------------------------------------------------------------------------------  ---------------------------
+2022-07-18 19:45:18.499000+00:00  CREATE_COMPLETE     AWS::CloudFormation::Stack                             tCaT-iaws-product-opensearch-opensearch2Instances-37cacdc580b746bf81125fbeec403299
+2022-07-18 19:45:16.654000+00:00  CREATE_COMPLETE     AWS::ServiceCatalog::CloudFormationProvisionedProduct  opensearchCluster
+2022-07-18 19:27:43.128000+00:00  CREATE_IN_PROGRESS  AWS::ServiceCatalog::CloudFormationProvisionedProduct  opensearchCluster                                                                   Resource creation Initiated
+2022-07-18 19:27:39.964000+00:00  CREATE_IN_PROGRESS  AWS::ServiceCatalog::CloudFormationProvisionedProduct  opensearchCluster
+2022-07-18 19:27:36.750000+00:00  CREATE_IN_PROGRESS  AWS::CloudFormation::Stack                             tCaT-iaws-product-opensearch-opensearch2Instances-37cacdc580b746bf81125fbeec403299  User Initiated
+*****************************************************************************
+-----------------------------------------------------------------------------
+Tested on: Monday, 18. July 2022 07:45PM
+-----------------------------------------------------------------------------
+

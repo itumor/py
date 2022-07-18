@@ -8,7 +8,7 @@ project:
   regions:
     - eu-central-1
 tests:
-  opensearch4Instance:
+  opensearch4Instances:
     template: ./launch-opensearch.yaml
     parameters:
       ProvisionedProductName: $[taskcat_random-string]
