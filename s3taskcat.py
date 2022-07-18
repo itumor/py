@@ -16,7 +16,7 @@ test = CFNTest.from_file(project_root='.', input_file='taskcatop.yml')
 
 
 # create logger
-logger = logging.getLogger('simple_example')
+logger = logging.getLogger('taskcat_opensearch')
 #logger.setLevel(logging.INFO)
 #logging.basicConfig(filename='example.log')
 now = datetime.now()
@@ -42,8 +42,8 @@ logger.addHandler(ch)
 #logger.warning('warn message')
 #logger.error('error message')
 #logger.critical('critical message')
-
-logger.info(test)
+logger.propagate = False
+#logger.info('log_test')
 
 ##opencase
 host = 'vpc-pcgtpjpuinupryhuhdng-jbmrtspwc3qe6oilrue4cwxcqq.eu-central-1.es.amazonaws.com' # cluster endpoint, for example: my-test-domain.us-east-1.es.amazonaws.com
@@ -73,8 +73,8 @@ index_body = {
 }
 
 response = client.indices.create(index_name, body=index_body)
-print('\nCreating index:')
-print(response)
+logger.info('\nCreating index:')
+logger.info(response)
 
 # Add a document to the index.
 document = {
@@ -91,8 +91,8 @@ response = client.index(
     refresh = True
 )
 
-print('\nAdding document:')
-print(response)
+logger.info('\nAdding document:')
+logger.info(response)
 
 # Search for the document.
 q = 'miller'
@@ -110,8 +110,8 @@ response = client.search(
     body = query,
     index = index_name
 )
-print('\nSearch results:')
-print(response)
+logger.info('\nSearch results:')
+logger.info(response)
 
 # Delete the document.
 response = client.delete(
@@ -119,21 +119,21 @@ response = client.delete(
     id = id
 )
 
-print('\nDeleting document:')
-print(response)
+logger.info('\nDeleting document:')
+logger.info(response)
 
 # Delete the index.
 idx_list = [x for x in client.indices.get_alias("*").keys() ]
-print('\nList index:')
-print(idx_list)
+logger.info('\nList index:')
+logger.info(idx_list)
 
 delete_index= client.indices.delete(index=index_name, ignore=[400, 404])
-print('\nDelete index:')
-print(delete_index)
+logger.info('\nDelete index:')
+logger.info(delete_index)
 
 idx_list = [x for x in client.indices.get_alias("*").keys() ]
-print('\nList index:')
-print(idx_list)
+logger.info('\nList index:')
+logger.info(idx_list)
 
 
 ##opencase
@@ -168,20 +168,20 @@ ProvisionedProductId = 'pp-aywt5clfexwze'
 #)
 
 
-print(response['Outputs'])
+logger.info(response['Outputs'])
 
 OpenSearchArn = next(filter(lambda x: x['OutputKey'] == 'OpenSearchArn', response['Outputs']), None)
-print(OpenSearchArn['OutputValue'])
+logger.info(OpenSearchArn['OutputValue'])
 
 OpenSearch_Arn=OpenSearchArn['OutputValue']
 Domain_name=OpenSearch_Arn.split("domain/",1)[1]
-print(OpenSearch_Arn.split("domain/",1)[1])
+logger.info(OpenSearch_Arn.split("domain/",1)[1])
 
 Domain_Endpoint = next(filter(lambda x: x['OutputKey'] == 'DomainEndpoint', response['Outputs']), None)
-print(Domain_Endpoint['OutputValue'])
+logger.info(Domain_Endpoint['OutputValue'])
 
 DomainMasterSecret = next(filter(lambda x: x['OutputKey'] == 'DomainMasterSecret', response['Outputs']), None)
-print(DomainMasterSecret['OutputValue'])
+logger.info(DomainMasterSecret['OutputValue'])
 
 
 secret_response = secrets_manager_client.get_secret_value(
@@ -189,8 +189,8 @@ secret_response = secrets_manager_client.get_secret_value(
         )
 
 secret = json.loads(secret_response['SecretString'])
-print (secret['password'])
-print (secret['username'])
+logger.info(secret['password'])
+logger.info(secret['username'])
 
 
 
@@ -205,8 +205,8 @@ response = awsclient.describe_domain(
 )
 
 
-print('\Describe Domain:')
-print(response['DomainStatus']['EngineVersion'])
+logger.info('\Describe Domain:')
+logger.info(response['DomainStatus']['EngineVersion'])
 
 
 
@@ -214,15 +214,15 @@ response = awsclient.describe_domain_config(
     DomainName=Domain_name
 )
 
-print('\Describe Domain Config:')
-print(response['DomainConfig']['ClusterConfig']['Options']['InstanceCount'])
+logger.info('\Describe Domain Config:')
+logger.info(response['DomainConfig']['ClusterConfig']['Options']['InstanceCount'])
 
 a = 2
 b = response['DomainConfig']['ClusterConfig']['Options']['InstanceCount']
 if b == a:
-  print("True")
+  logger.info("True")
 else:
-  print("False")
+  logger.info("False")
 
 
 
@@ -230,19 +230,19 @@ else:
 ###case
 
 
-with test as stacks:
+#with test as stacks:
     # Calling 'with' or 'test.run()' will deploy the stacks.
-    for stack in stacks:
-        print(f"Testing {stack.name}")
-        bucket_name = ""
-        for output in stack.outputs:
-            if output.key == "ScItemId":
-                bucket_name = output.value
-                logger.info(bucket_name)
-                break
+#    for stack in stacks:
+#        logger.info(f"Testing {stack.name}")
+#        bucket_name = ""
+#        for output in stack.outputs:
+#            if output.key == "ScItemId":
+#                bucket_name = output.value
+#                logger.info(bucket_name)
+#                break
         #assert "logs" in bucket_name
         #assert stack.region.name in bucket_name
-       # print(f"Created bucket: {bucket_name}")
+       # logger.info(f"Created bucket: {bucket_name}")
         #test.run()
 
        

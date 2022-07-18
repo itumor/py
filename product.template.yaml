@@ -1,0 +1,499 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: OpenSearch is a distributed, open-source search and analytics suite used for a broad set of use cases like real-time application monitoring, log analytics, and website search.  
+Metadata:
+  'AWS::CloudFormation::Interface':
+    ParameterGroups:
+    -
+      Label:
+        default: 'OpenSearch Parameters'
+      Parameters:
+      - DomainName
+      - EBSVolumeSize
+      - ClusterInstanceCount
+      - ClusterInstanceType
+      - opSecurityGroup
+      - PSsmEnvironment
+      - KMSArnForSecretManager
+      - KMSArnForEncryptionAtRest
+      - PSsmSubnetIds
+      - PSsmNRSubnetCIDRs
+      - EnableLogs
+
+#-------------------------------------------------------Parameters------------------------------------------------------#
+
+Parameters:
+  DomainName:
+    Description: 'A name for the Amazon OpenSearch domain.'
+    Type: String
+    Default: 'domainname'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+  EBSVolumeSize:
+    Description: 'The size of the EBS volume for each data node. The minimum and maximum size of an EBS volume depends on the EBS volume type and the instance type to which it is attached.'
+    Type: Number
+    Default: 10
+    MinValue: 10
+    MaxValue: 1536
+  ClusterInstanceCount:
+    Description: 'The number of data nodes (instances) to use in the Amazon ES domain.'
+    Type: Number
+    Default: 2
+    MinValue: 1
+    MaxValue: 80
+  ClusterInstanceType:
+    Description: 'The instance type for your data nodes.'
+    Type: 'String'
+    Default: 'small'
+    AllowedValues:
+      - small
+      - medium
+      - large
+      - xlarge
+      - 2xlarge
+  opSecurityGroup:
+    Description: >-
+      Specify the security group to be used by OpenSearch, if not provide a default will get created
+    Type: String
+    Default: ''
+  PSsmEnvironment:
+    Description: Environment from the SSM parameter
+    Type: 'AWS::SSM::Parameter::Value<String>'
+    Default: /platform/account/env
+    AllowedValues:
+      - /platform/account/env
+  KMSArnForSecretManager:
+    Type: String
+    Description: Enter KMS key (symmetric) arn (Format arn:aws:kms:<region>:<account-ID>:key/<key-id>) to be used for encrypting secrets
+    ConstraintDescription: format should be arn:aws:kms:<region>:<account-ID>:key/<key-id>
+    Default: arn:aws:kms:eu-central-1:600027353764:key/cec03951-59ac-44a0-94eb-fa5ebd6bcf77
+    AllowedPattern: (^arn\:aws\:kms\:.+)
+  KMSArnForEncryptionAtRest:
+    Type: String
+    Description: Enter KMS key (symmetric) arn (Format arn:aws:kms:<region>:<account-ID>:key/<key-id>) to be used for encrypt data at rest
+    ConstraintDescription: format should be arn:aws:kms:<region>:<account-ID>:key/<key-id>
+    Default: arn:aws:kms:eu-central-1:600027353764:key/cec03951-59ac-44a0-94eb-fa5ebd6bcf77
+    AllowedPattern: (^arn\:aws\:kms\:.+)
+  PSsmSubnetIds:
+    Description: >-
+      Subnet types in which the instance is to be placed. (possible values: /platform/sharedvpc/private_subnets or /platform/sharedvpc/nr_private_subnets)
+    Type: AWS::SSM::Parameter::Value<List<String>>
+    Default: /platform/sharedvpc/private_subnets
+    AllowedValues:
+      - /platform/sharedvpc/nr_private_subnets
+      - /platform/sharedvpc/private_subnets
+  PSsmNRSubnetCIDRs:
+    Description: >-
+      LEAVE AS IT IS - Default SG Subnet cidr ranges from non routable subnets of shared VPC.
+    Type: AWS::SSM::Parameter::Value<List<String>>
+    Default: /platform/sharedvpc/nr_private_subnets_cidrs
+    AllowedValues:
+      - /platform/sharedvpc/nr_private_subnets_cidrs
+  EnableLogs:
+    Description: 'Enable the Logs '
+    Type: 'String'
+    Default: 'false'
+    AllowedValues:
+      - 'true'
+      - 'false'
+
+#---------------------------------------------------Conditions----------------------------------------------------------#
+
+Conditions:
+  IS-No-SG: !Equals 
+    - !Ref opSecurityGroup
+    - ""
+
+  IS-SG: !Not [!Equals [!Ref opSecurityGroup, ""]]
+
+  IS-Not-Dev: !Not
+    - !Equals 
+      - !Ref PSsmEnvironment
+      - "development"
+  
+  IS-Dev: !Equals 
+    - !Ref PSsmEnvironment
+    - "development"
+
+  IS-No-SG-AND-Not-Dev: !And
+    - !Condition IS-No-SG
+    - !Condition IS-Not-Dev
+  
+  IS-No-SG-AND-Dev: !And
+    - !Condition IS-No-SG
+    - !Condition IS-Dev
+
+  IS-Logs: !Or [!Equals ['true', !Ref EnableLogs], Condition: IS-Not-Dev]
+  IS-Not-Logs: !And [!Equals ['false', !Ref EnableLogs], Condition: IS-Dev]
+
+#---------------------------------------------------Mappings----------------------------------------------------------#
+Mappings:
+  Plans:
+    small:
+      Instance: t3.small.search
+      StorageType: gp2
+      MinStorage: 10
+      MaxStorage: 100
+    medium:
+      Instance: t3.medium.search
+      StorageType: gp2
+      MinStorage: 10
+      MaxStorage: 200
+    large:
+      Instance: m6g.large.search
+      StorageType: gp2
+      MinStorage: 10
+      MaxStorage: 512
+    xlarge:
+      Instance: m6g.xlarge.search
+      StorageType: gp2
+      MinStorage: 10
+      MaxStorage: 1024
+    2xlarge:
+      Instance: m6g.2xlarge.search
+      StorageType: gp2
+      MinStorage: 10
+      MaxStorage: 1536
+
+
+#-----------------------------------------------------Resources--------------------------------------------------------#
+
+Resources:
+  DomainMasterSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      GenerateSecretString:
+        ExcludeCharacters: "{}'\\*[]()`"
+        GenerateStringKey: password
+        SecretStringTemplate: '{"username":"master-user"}'
+      KmsKeyId: !Ref KMSArnForSecretManager
+      Tags:
+          - Key: 'sc:name'
+            Value: !Sub ${DomainName}-${PSsmEnvironment}-secret
+          - Key: 'sc:app-uuid'
+            Value: '{{resolve:ssm:/platform/account/app-uuid}}'
+          - Key: 'sc:env'
+            Value: '{{resolve:ssm:/platform/account/env}}'
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+
+
+#----------------NewSecurityGroup----------------#
+
+  DefaultopSecurityGroupDev:
+    Type: 'AWS::EC2::SecurityGroup'
+    Condition: IS-No-SG-AND-Dev
+    Properties:
+      GroupDescription: Open access for OpenSearch
+      VpcId: !Sub 
+        - '{{resolve:ssm:/platform/sharedvpc/${Environment}/vpc_id}}'
+        - Environment: !Ref PSsmEnvironment
+      SecurityGroupEgress:
+        - IpProtocol: tcp          
+          FromPort: 443   
+          ToPort: 443
+          CidrIp: 0.0.0.0/32
+          Description: Open access for OpenSearch Ingress
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: !Select [0, !Ref PSsmNRSubnetCIDRs ]
+          Description: "NR-private subnet 1 cidr range."
+        - IpProtocol: tcp
+          FromPort: 443
+          ToPort: 443
+          CidrIp: !Select [1, !Ref PSsmNRSubnetCIDRs ]
+          Description: "NR-private subnet 2 cidr range."
+      Tags:
+        - Key: 'sc:name'
+          Value: !Join ['.', [ !Ref AWS::StackName, !Ref PSsmEnvironment, !Ref AWS::Region, "sg-op", !Sub '{{resolve:ssm:/platform/sharedvpc/${PSsmEnvironment}/vpc_id}}']]
+        - Key: 'sc:app-uuid'
+          Value: '{{resolve:ssm:/platform/account/app-uuid}}'
+        - Key: 'sc:env'
+          Value: '{{resolve:ssm:/platform/account/env}}'
+  
+  DefaultopSecurityGroupStageProd:
+    Type: 'AWS::EC2::SecurityGroup'
+    Condition: IS-No-SG-AND-Not-Dev
+    Properties:
+      GroupDescription: Open access for OpenSearch
+      VpcId: !Sub 
+        - '{{resolve:ssm:/platform/sharedvpc/${Environment}/vpc_id}}'
+        - Environment: !Ref PSsmEnvironment
+      SecurityGroupEgress:
+        - CidrIp: 127.0.0.1/32
+          IpProtocol: "-1" 
+          Description: "SecurityGroupEgress"
+      Tags:
+        - Key: 'sc:name'
+          Value: !Join ['.', [ !Ref AWS::StackName, !Ref PSsmEnvironment, !Ref AWS::Region, "sg-op", !Sub '{{resolve:ssm:/platform/sharedvpc/${PSsmEnvironment}/vpc_id}}']]
+        - Key: 'sc:app-uuid'
+          Value: '{{resolve:ssm:/platform/account/app-uuid}}'
+        - Key: 'sc:env'
+          Value: '{{resolve:ssm:/platform/account/env}}'
+
+
+#----------------Logs----------------#
+
+  DomainSlowSearchLogs:
+    Type: AWS::Logs::LogGroup
+    Condition: IS-Logs
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub '/aws/opensearch/${DomainName}/DomainSlowLogs'
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    
+
+  OpenSearchLogPolicy:
+    Type: AWS::Logs::ResourcePolicy
+    Condition: IS-Logs
+    Properties:
+      PolicyName: !Sub opensearch-${DomainName}-log-policy
+      PolicyDocument: !Sub "{ \"Version\": \"2012-10-17\", \"Statement\": [{ \"Sid\": \"\", \"Effect\": \"Allow\", \"Principal\": { \"Service\": \"es.amazonaws.com\"}, \"Action\":[ \"logs:PutLogEvents\",\"logs:PutLogEventsBatch\",\"logs:CreateLogStream\"],\"Resource\": \"arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/opensearch/${DomainName}/*\"}]}"
+
+  DomainSlowIndexLogs:
+    Type: AWS::Logs::LogGroup
+    Condition: IS-Logs
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub '/aws/opensearch/${DomainName}/DomainSlowIndexLogs'
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+
+
+  DomainAppLogs:
+    Type: AWS::Logs::LogGroup
+    Condition: IS-Logs
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub '/aws/opensearch/${DomainName}/DomainAppLogs'
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+
+
+  DomainAuditLogs:
+    Type: AWS::Logs::LogGroup
+    Condition: IS-Logs
+    Properties:
+      RetentionInDays: 30
+      LogGroupName: !Sub '/aws/opensearch/${DomainName}/DomainAuditLogs'
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+
+
+#---------------Role-----------------#
+  
+  ServiceLinkedRole:
+    Type: 'AWS::IAM::ServiceLinkedRole'
+    Properties:
+      AWSServiceName: es.amazonaws.com
+      Description: 'Role for ES to access resources in my VPC'
+
+#--------------Open Search Service Domain without Logs------------------#
+  
+  OpenSearchServiceDomain:
+    Type: 'AWS::OpenSearchService::Domain'
+    Condition: IS-Not-Logs
+    Properties:
+      DomainName:
+        Ref: DomainName
+      EngineVersion: 'OpenSearch_1.2' # aws opensearch list-versions --query "Versions[]" 
+      ClusterConfig:
+        DedicatedMasterCount: !If [IS-Not-Dev, 3 , !Ref 'AWS::NoValue']
+        DedicatedMasterEnabled: !If [IS-Not-Dev, true, false]
+        DedicatedMasterType: !If [IS-Not-Dev, !FindInMap [ Plans, small , Instance ] , !Ref 'AWS::NoValue']
+        InstanceCount:  !If [IS-Not-Dev, !Ref ClusterInstanceCount, 1]
+        InstanceType: !FindInMap 
+        - Plans
+        - !Ref ClusterInstanceType
+        - Instance
+        ZoneAwarenessEnabled: !If [IS-Not-Dev, true,false]   
+      EBSOptions:
+        EBSEnabled: true
+        VolumeSize: !Ref EBSVolumeSize
+        VolumeType: gp2
+      CognitoOptions:
+        Enabled: false
+      NodeToNodeEncryptionOptions:
+        Enabled: true
+      DomainEndpointOptions:
+        EnforceHTTPS: true
+        TLSSecurityPolicy: Policy-Min-TLS-1-0-2019-07
+      EncryptionAtRestOptions:
+        Enabled: true
+        KmsKeyId: !Ref KMSArnForEncryptionAtRest
+      AdvancedOptions:
+        rest.action.multi.allow_explicit_index: true
+        override_main_response_version: true
+      Tags:
+          - Key: 'sc:name'
+            Value: !Sub ${DomainName}-${PSsmEnvironment}-op
+          - Key: 'sc:app-uuid'
+            Value: '{{resolve:ssm:/platform/account/app-uuid}}'
+          - Key: 'sc:env'
+            Value: '{{resolve:ssm:/platform/account/env}}'
+      AdvancedSecurityOptions:
+        Enabled: true
+        InternalUserDatabaseEnabled: true
+        MasterUserOptions:
+          MasterUserName: master-user
+          MasterUserPassword:
+            Fn::Join:
+              - ""
+              - - "{{resolve:secretsmanager:"
+                - Ref: DomainMasterSecret
+                - :SecretString:password::}}
+      VPCOptions:
+        SubnetIds:
+          'Fn::If':
+            - IS-Dev
+            - 
+              - !Select [ 0, !Ref PSsmSubnetIds ]
+            - !Ref PSsmSubnetIds
+        SecurityGroupIds:
+          'Fn::If':
+            - IS-SG
+            - 
+              - !Ref opSecurityGroup
+            - 
+              - !If [IS-Not-Dev, !Ref DefaultopSecurityGroupStageProd, !Ref DefaultopSecurityGroupDev] 
+    UpdatePolicy:
+      EnableVersionUpgrade: true
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    DependsOn:
+    - ServiceLinkedRole
+
+
+#--------------Open Search Service Domain with Logs ------------------#
+  
+  OpenSearchServiceDomainwithlogs:
+    Type: 'AWS::OpenSearchService::Domain'
+    Condition: IS-Logs
+    Properties:
+      DomainName:
+        Ref: DomainName
+      EngineVersion: 'OpenSearch_1.2' # aws opensearch list-versions --query "Versions[]" 
+      ClusterConfig:
+        DedicatedMasterCount: !If [IS-Not-Dev, 3 , !Ref 'AWS::NoValue']
+        DedicatedMasterEnabled: !If [IS-Not-Dev, true, false]
+        DedicatedMasterType: !If [IS-Not-Dev, !FindInMap [ Plans, small , Instance ] , !Ref 'AWS::NoValue']
+        InstanceCount:  !If [IS-Not-Dev, !Ref ClusterInstanceCount, 1]
+        InstanceType: !FindInMap 
+        - Plans
+        - !Ref ClusterInstanceType
+        - Instance
+        ZoneAwarenessEnabled: !If [IS-Not-Dev, true,false]   
+      EBSOptions:
+        EBSEnabled: true
+        VolumeSize: !Ref EBSVolumeSize
+        VolumeType: gp2
+      LogPublishingOptions:
+        ES_APPLICATION_LOGS:
+          CloudWatchLogsLogGroupArn:
+            Fn::GetAtt:
+              - DomainAppLogs
+              - Arn
+          Enabled:  !If [IS-Logs, true, false]
+        SEARCH_SLOW_LOGS:
+          CloudWatchLogsLogGroupArn:
+            Fn::GetAtt:
+              - DomainSlowSearchLogs
+              - Arn
+          Enabled: !If [IS-Logs, true, false]
+        INDEX_SLOW_LOGS:
+          CloudWatchLogsLogGroupArn:
+            Fn::GetAtt:
+              - DomainSlowIndexLogs
+              - Arn
+          Enabled: !If [IS-Logs, true, false]
+        AUDIT_LOGS:
+          CloudWatchLogsLogGroupArn:
+            Fn::GetAtt:
+              - DomainAuditLogs
+              - Arn
+          Enabled: !If [IS-Logs, true, false]
+      CognitoOptions:
+        Enabled: false
+      NodeToNodeEncryptionOptions:
+        Enabled: true
+      DomainEndpointOptions:
+        EnforceHTTPS: true
+        TLSSecurityPolicy: Policy-Min-TLS-1-0-2019-07
+      EncryptionAtRestOptions:
+        Enabled: true
+        KmsKeyId: !Ref KMSArnForEncryptionAtRest
+      AdvancedOptions:
+        rest.action.multi.allow_explicit_index: true
+        override_main_response_version: true
+      Tags:
+          - Key: 'sc:name'
+            Value: !Sub ${DomainName}-${PSsmEnvironment}-op
+          - Key: 'sc:app-uuid'
+            Value: '{{resolve:ssm:/platform/account/app-uuid}}'
+          - Key: 'sc:env'
+            Value: '{{resolve:ssm:/platform/account/env}}'
+      AdvancedSecurityOptions:
+        Enabled: true
+        InternalUserDatabaseEnabled: true
+        MasterUserOptions:
+          MasterUserName: master-user
+          MasterUserPassword:
+            Fn::Join:
+              - ""
+              - - "{{resolve:secretsmanager:"
+                - Ref: DomainMasterSecret
+                - :SecretString:password::}}
+      VPCOptions:
+        SubnetIds:
+          'Fn::If':
+            - IS-Dev
+            - 
+              - !Select [ 0, !Ref PSsmSubnetIds ]
+            - !Ref PSsmSubnetIds
+        SecurityGroupIds:
+          'Fn::If':
+            - IS-SG
+            - 
+              - !Ref opSecurityGroup
+            - 
+              - !If [IS-Not-Dev, !Ref DefaultopSecurityGroupStageProd, !Ref DefaultopSecurityGroupDev] 
+    UpdatePolicy:
+      EnableVersionUpgrade: true
+    UpdateReplacePolicy: Delete
+    DeletionPolicy: Delete
+    DependsOn:
+    - ServiceLinkedRole
+
+#----------------------------------------------------Outputs---------------------------------------------------------#
+
+Outputs:
+  OpenSearchArn:
+    Description: 'OpenSearch Arn'
+    Value:
+        'Fn::If':
+          - IS-Logs
+          - !GetAtt OpenSearchServiceDomainwithlogs.Arn
+          - !GetAtt OpenSearchServiceDomain.Arn
+          
+          
+  DomainEndpoint:
+    Description: 'OpenSearch Domain Endpoint'
+    Value:
+        'Fn::If':
+          - IS-Logs
+          - !GetAtt OpenSearchServiceDomainwithlogs.DomainEndpoint
+          - !GetAtt OpenSearchServiceDomain.DomainEndpoint
+
+  opSecurityGroupID:
+      Description: 'OpenSearch security group Id, will come handy for traffic accesss'
+      Value:
+        'Fn::If':
+          - IS-SG
+          - !Ref opSecurityGroup
+          - !If [ IS-Not-Dev, !GetAtt DefaultopSecurityGroupStageProd.GroupId ,!GetAtt DefaultopSecurityGroupDev.GroupId ]
+  DomainMasterSecret:
+    Description: 'OpenSearch Domain master secret'
+    Value:
+      Ref: DomainMasterSecret
