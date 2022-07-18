@@ -16,43 +16,36 @@ from logger import *
 from ServiceCatalogConfig import *
 
 
-##opencase
 
-#host = 'vpc-pcgtpjpuinupryhuhdng-jbmrtspwc3qe6oilrue4cwxcqq.eu-central-1.es.amazonaws.com' # cluster endpoint, for example: my-test-domain.us-east-1.es.amazonaws.com
+
 region = 'eu-central-1' # e.g. us-west-1
-Endpoint=GetDomain_Endpoint('pp-aywt5clfexwze')
-logger.info(Endpoint)
-username= GetDomain_username('pp-aywt5clfexwze')
-logger.info(username)
-password= GetDomain_password('pp-aywt5clfexwze')
-logger.info(password)
-
-OpenSearchConn(Endpoint,region,username,password)
-
-##opencase
-
-###case
-Domain_name=GetDomain_Domain_name('pp-aywt5clfexwze')
-logger.info(Domain_name)
+def OpenSearchConnTest(ProvisionedProductId):
+    Endpoint=GetDomain_Endpoint('pp-aywt5clfexwze')
+    logger.info(Endpoint)
+    username= GetDomain_username('pp-aywt5clfexwze')
+    logger.info(username)
+    password= GetDomain_password('pp-aywt5clfexwze')
+    logger.info(password)
+    
+    OpenSearchConn(Endpoint,region,username,password)
 
 
 
-EngineVersion=GetDomain_EngineVersion(Domain_name)
-logger.info(EngineVersion)
 
-
-
-InstanceCount=GetDomain_InstanceCount(Domain_name)
-logger.info(InstanceCount)
-
-
-
-a = 2
-b = InstanceCount
-if b == a:
-  logger.info("True")
-else:
-  logger.info("False")
+def TestCase(ProvisionedProductId):
+    Domain_name=GetDomain_Domain_name(ProvisionedProductId)
+    logger.info(Domain_name)
+    EngineVersion=GetDomain_EngineVersion(Domain_name)
+    logger.info(EngineVersion)
+    InstanceCount=GetDomain_InstanceCount(Domain_name)
+    logger.info(InstanceCount)
+    
+    a = 2
+    b = InstanceCount
+    if b == a:
+      logger.info("True")
+    else:
+      logger.info("False")
 
 
 
@@ -87,13 +80,12 @@ with test as stacks:
                 service_catalog_provided_item_id = output.value
         if stack.name.startswith('tCaT-iaws-product-opensearch-opensearch1Instances'):  
                 LOG.info(f"Testing {stack.name}")
-                test_docdb1Instance()
-                test_read_write(service_catalog_provided_item_id)
+                OpenSearchConnTest(service_catalog_provided_item_id)
+                TestCase(service_catalog_provided_item_id)
                 LOG.info(f"Testing {stack.name} done!")
         if stack.name.startswith('tCaT-iaws-product-opensearch-opensearch2Instances'):
                 LOG.info(f"Testing {stack.name}")
-                test_docdb2Instances()
-                test_read_write(service_catalog_provided_item_id)
+                OpenSearchConnTest(service_catalog_provided_item_id)
+                TestCase(service_catalog_provided_item_id)
                 LOG.info(f"Testing {stack.name} done!")
-            
 logger.info('done')
