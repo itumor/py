@@ -59,16 +59,16 @@ else:
 
 ###case
 
-#test = CFNTest.from_file(project_root='.', input_file='taskcatop.yml')
-#with test as stacks:
+test = CFNTest.from_file(project_root='.', input_file='taskcatop.yml')
+with test as stacks:
     # Calling 'with' or 'test.run()' will deploy the stacks.
-#    for stack in stacks:
-#        logger.info(f"Testing {stack.name}")
-#        bucket_name = ""
-#        for output in stack.outputs:
-#            if output.key == "ScItemId":
-#                bucket_name = output.value
-#                logger.info(bucket_name)
+    for stack in stacks:
+        logger.info(f"Testing {stack.name}")
+        bucket_name = ""
+        for output in stack.outputs:
+            if output.key == "ScItemId":
+                bucket_name = output.value
+                logger.info(bucket_name)
 #                break
         #assert "logs" in bucket_name
         #assert stack.region.name in bucket_name
