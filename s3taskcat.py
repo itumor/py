@@ -18,9 +18,8 @@ from ServiceCatalogConfig import *
 
 ##opencase
 
-host = 'vpc-pcgtpjpuinupryhuhdng-jbmrtspwc3qe6oilrue4cwxcqq.eu-central-1.es.amazonaws.com' # cluster endpoint, for example: my-test-domain.us-east-1.es.amazonaws.com
+#host = 'vpc-pcgtpjpuinupryhuhdng-jbmrtspwc3qe6oilrue4cwxcqq.eu-central-1.es.amazonaws.com' # cluster endpoint, for example: my-test-domain.us-east-1.es.amazonaws.com
 region = 'eu-central-1' # e.g. us-west-1
-
 Endpoint=GetDomain_Endpoint('pp-aywt5clfexwze')
 logger.info(Endpoint)
 username= GetDomain_username('pp-aywt5clfexwze')
@@ -28,13 +27,14 @@ logger.info(username)
 password= GetDomain_password('pp-aywt5clfexwze')
 logger.info(password)
 
-
-
 OpenSearchConn(Endpoint,region,username,password)
 
 ##opencase
 
 ###case
+Domain_name=GetDomain_Domain_name('pp-aywt5clfexwze')
+logger.info(Domain_name)
+
 
 
 

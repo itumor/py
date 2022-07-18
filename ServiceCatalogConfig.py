@@ -62,6 +62,18 @@ def GetDomain_password(ProvisionedProductId):
     logger.info(secret['password'])
     return(secret['password'])
 
+def GetDomain_Domain_name(ProvisionedProductId):
+    response = sc_client.get_provisioned_product_outputs(
+    ProvisionedProductId = ProvisionedProductId
+    )
+    OpenSearchArn = next(filter(lambda x: x['OutputKey'] == 'OpenSearchArn', response['Outputs']), None)
+    logger.info(OpenSearchArn['OutputValue'])
+    
+    OpenSearch_Arn=OpenSearchArn['OutputValue']
+    Domain_name=OpenSearch_Arn.split("domain/",1)[1]
+    logger.info(OpenSearch_Arn.split("domain/",1)[1])
+    return(Domain_name)
+
     
     
 ##response = sc_client.get_provisioned_product_outputs(
