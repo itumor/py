@@ -12,7 +12,7 @@ import json
 from typing import List, Set, Tuple
 from opensearchpy import OpenSearch, RequestsHttpConnection
 
-test = CFNTest.from_file(project_root='.', input_file='.taskcat.yml')
+test = CFNTest.from_file(project_root='.', input_file='taskcat.yml')
 
 
 # create logger
