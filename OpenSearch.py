@@ -3,13 +3,6 @@ from logger import *
 
 # Open Search Conn function
 def OpenSearchConn(host,region,user,password):
-    print(host)
-    print(region)
-    print(user)
-    print(password)
-    auth = (user, password)
-    print (auth)
-    
     client = OpenSearch(
         hosts = [{'host': host, 'port': 443}],
         http_auth = auth,
