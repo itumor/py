@@ -74,75 +74,26 @@ def GetDomain_Domain_name(ProvisionedProductId):
     logger.info(OpenSearch_Arn.split("domain/",1)[1])
     return(Domain_name)
 
+def GetDomain_EngineVersion(Domain_name):
+    awsclient = boto3.client('opensearch', config=my_config)
+
+    # Describe The Domain.
+    response = awsclient.describe_domain(
+        DomainName=Domain_name
+       # ARN='arn:aws:es:eu-central-1:600027353764:domain/pcgtpjpuinupryhuhdng'
+    )
     
+    logger.info('\Describe Domain:')
+    logger.info(response['DomainStatus']['EngineVersion'])
+    return(response['DomainStatus']['EngineVersion'])
+
+
+def GetDomain_InstanceCount(Domain_name):
+    awsclient = boto3.client('opensearch', config=my_config)
+    response = awsclient.describe_domain_config(
+        DomainName=Domain_name
+    )
     
-##response = sc_client.get_provisioned_product_outputs(
-
-##ProvisionedProductName = 'iaws-opensearch'
-##)
-response = sc_client.get_provisioned_product_outputs(
-ProvisionedProductId = 'pp-aywt5clfexwze'
-)
-
-
-
-#outputs = sc_client.get_provisioned_product_outputs(
-#    ProvisionedProductName = 'prod-zdpipcxs7ekou' 
-#)
-
-
-logger.info(response['Outputs'])
-
-OpenSearchArn = next(filter(lambda x: x['OutputKey'] == 'OpenSearchArn', response['Outputs']), None)
-logger.info(OpenSearchArn['OutputValue'])
-
-OpenSearch_Arn=OpenSearchArn['OutputValue']
-Domain_name=OpenSearch_Arn.split("domain/",1)[1]
-logger.info(OpenSearch_Arn.split("domain/",1)[1])
-
-Domain_Endpoint = next(filter(lambda x: x['OutputKey'] == 'DomainEndpoint', response['Outputs']), None)
-logger.info(Domain_Endpoint['OutputValue'])
-
-DomainMasterSecret = next(filter(lambda x: x['OutputKey'] == 'DomainMasterSecret', response['Outputs']), None)
-logger.info(DomainMasterSecret['OutputValue'])
-
-
-secret_response = secrets_manager_client.get_secret_value(
-            SecretId=DomainMasterSecret['OutputValue']
-        )
-
-secret = json.loads(secret_response['SecretString'])
-logger.info(secret['password'])
-logger.info(secret['username'])
-
-
-
-#domain_name='pcgtpjpuinupryhuhdng'
-
-awsclient = boto3.client('opensearch', config=my_config)
-
-# Describe The Domain.
-response = awsclient.describe_domain(
-    DomainName=Domain_name
-   # ARN='arn:aws:es:eu-central-1:600027353764:domain/pcgtpjpuinupryhuhdng'
-)
-
-
-logger.info('\Describe Domain:')
-logger.info(response['DomainStatus']['EngineVersion'])
-
-
-
-response = awsclient.describe_domain_config(
-    DomainName=Domain_name
-)
-
-logger.info('\Describe Domain Config:')
-logger.info(response['DomainConfig']['ClusterConfig']['Options']['InstanceCount'])
-
-a = 2
-b = response['DomainConfig']['ClusterConfig']['Options']['InstanceCount']
-if b == a:
-  logger.info("True")
-else:
-  logger.info("False")
+    logger.info('\Describe Domain Config:')
+    logger.info(response['DomainConfig']['ClusterConfig']['Options']['InstanceCount'])
+    return(response['DomainConfig']['ClusterConfig']['Options']['InstanceCount'])
