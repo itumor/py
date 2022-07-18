@@ -12,4 +12,3 @@ tests:
     template: ./s3.yaml
     parameters:
       Name: $[taskcat_random-string]
-

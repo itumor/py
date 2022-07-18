@@ -12,7 +12,7 @@ import json
 from typing import List, Set, Tuple
 from opensearchpy import OpenSearch, RequestsHttpConnection
 
-test = CFNTest.from_file(project_root='.', input_file='taskcat.yml')
+test = CFNTest.from_file(project_root='.', input_file='taskcatop.yml')
 
 
 # create logger
@@ -236,7 +236,7 @@ with test as stacks:
         print(f"Testing {stack.name}")
         bucket_name = ""
         for output in stack.outputs:
-            if output.key == "S3Bucket":
+            if output.key == "ScItemId":
                 bucket_name = output.value
                 logger.info(bucket_name)
                 break

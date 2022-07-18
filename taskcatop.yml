@@ -1,0 +1,20 @@
+general:
+  s3_regional_buckets: true
+  regions:
+  - "eu-central-1"
+  tags: {"name": "testcat" }
+project:
+  name: iaws-product-opensearch
+  regions:
+    - eu-central-1
+tests:
+#  opensearch4Instance:
+#    template: ./launch-opensearch.yaml
+#    parameters:
+#      ProvisionedProductName: $[taskcat_random-string]
+#      NoOfInstances: 4
+  opensearch2Instances:
+    template: ./launch-opensearch.yaml
+    parameters:
+      ProvisionedProductName: $[taskcat_random-string]
+      NoOfInstances: 2

@@ -1,0 +1,36 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'CloudFormation Template for launching opensearch via ServiceCatalog'
+
+Parameters:
+  ProvisionedProductName:
+    Type: String 
+    Default: opensearch
+  NoOfInstances:
+    Type: Number
+    Default: 1
+ 
+Resources:
+  opensearchCluster:
+    Type: 'AWS::ServiceCatalog::CloudFormationProvisionedProduct'
+    Properties: 
+      ProductName: iaws-opensearch
+      ProvisionedProductName: !Ref ProvisionedProductName
+      ProvisioningArtifactName: 1.0.0
+      ProvisioningParameters: 
+       - Key: DomainName
+         Value: !Ref ProvisionedProductName
+       - Key: ClusterInstanceCount
+         Value: !Ref NoOfInstances
+#       - Key: KMSArnForEncryptionAtRest
+#         Value: !Sub 'arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/sc/${AWS::AccountId}/regression-testing' 
+#       - Key: KMSArnForSecretManager
+#         Value: !Sub 'arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/sc/${AWS::AccountId}/regression-testing' 
+       - Key: opSecurityGroup
+         Value: ''
+       - Key: PSsmSubnetIds
+         Value: '/platform/sharedvpc/private_subnets'
+
+Outputs:
+  ScItemId:
+    Description: The ID of the created Service Catalog prod
+    Value: !Ref opensearchCluster
