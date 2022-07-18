@@ -68,8 +68,9 @@ def TestCase(ProvisionedProductId):
         #assert stack.region.name in bucket_name
        # logger.info(f"Created bucket: {bucket_name}")
         #test.run()
-
         
+output_directory='./out'
+
 test = CFNTest.from_file(project_root='.', input_file='taskcatop.yml')
 logger.info("Starting")
 with test as stacks:
