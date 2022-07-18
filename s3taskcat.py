@@ -80,7 +80,7 @@ with test as stacks:
         for output in stack.outputs:
             if output.key == "ScItemId":
                 service_catalog_provided_item_id = output.value
-        if stack.name.startswith('tCaT-iaws-product-opensearch-opensearch1Instances'):  
+        if stack.name.startswith('tCaT-iaws-product-opensearch-opensearch4Instances'):  
                 logger.info(f"Testing {stack.name}")
                 OpenSearchConnTest(service_catalog_provided_item_id)
                 TestCase(service_catalog_provided_item_id)

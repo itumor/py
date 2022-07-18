@@ -8,11 +8,11 @@ project:
   regions:
     - eu-central-1
 tests:
-#  opensearch4Instance:
-#    template: ./launch-opensearch.yaml
-#    parameters:
-#      ProvisionedProductName: $[taskcat_random-string]
-#      NoOfInstances: 4
+  opensearch4Instance:
+    template: ./launch-opensearch.yaml
+    parameters:
+      ProvisionedProductName: $[taskcat_random-string]
+      NoOfInstances: 4
   opensearch2Instances:
     template: ./launch-opensearch.yaml
     parameters:
