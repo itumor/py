@@ -20,11 +20,11 @@ from ServiceCatalogConfig import *
 
 region = 'eu-central-1' # e.g. us-west-1
 def OpenSearchConnTest(ProvisionedProductId):
-    Endpoint=GetDomain_Endpoint('pp-aywt5clfexwze')
+    Endpoint=GetDomain_Endpoint(ProvisionedProductId)
     logger.info(Endpoint)
-    username= GetDomain_username('pp-aywt5clfexwze')
+    username= GetDomain_username(ProvisionedProductId)
     logger.info(username)
-    password= GetDomain_password('pp-aywt5clfexwze')
+    password= GetDomain_password(ProvisionedProductId)
     logger.info(password)
     assert OpenSearchConn(Endpoint,region,username,password) == True,"issue was the OpenSearch connection"
 
@@ -49,26 +49,6 @@ def TestCase(ProvisionedProductId):
       logger.info("False")
 
 
-
-
-###case
-
-#test = CFNTest.from_file(project_root='.', input_file='taskcatop.yml')
-#with test as stacks:
-    # Calling 'with' or 'test.run()' will deploy the stacks.
-#    for stack in stacks:
-#        logger.info(f"Testing {stack.name}")
-#        bucket_name = ""
-#        for output in stack.outputs:
-#            if output.key == "ScItemId":
-#                bucket_name = output.value
-#                logger.info(bucket_name)
-#                break
-        #assert "logs" in bucket_name
-        #assert stack.region.name in bucket_name
-       # logger.info(f"Created bucket: {bucket_name}")
-        #test.run()
-        
 output_directory='./out'
 
 test = CFNTest.from_file(project_root='.', input_file='taskcatop.yml')
