@@ -322,7 +322,7 @@ Resources:
             Principal:
               AWS: '*'
             Action: 'es:*'
-            Resource: 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:domain:/${DomainName}/*'    
+            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:domain:/${DomainName}/*'    
       CognitoOptions:
         Enabled: false
       NodeToNodeEncryptionOptions:
@@ -408,7 +408,7 @@ Resources:
             Principal:
               AWS: '*'
             Action: 'es:*'
-            Resource: 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:domain:/${DomainName}/*'  
+            Resource: !Sub 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:domain:/${DomainName}/*'  
       LogPublishingOptions:
         ES_APPLICATION_LOGS:
           CloudWatchLogsLogGroupArn:
