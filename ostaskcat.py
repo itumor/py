@@ -1,16 +1,4 @@
 from taskcat.testing import CFNTest
-from taskcat._tui import TerminalPrinter
-from datetime import datetime
-import logging
-import boto3
-from botocore.config import Config
-import pymongo
-import urllib.parse
-import botocore
-import time
-import json
-from typing import List, Set, Tuple
-from opensearchpy import OpenSearch, RequestsHttpConnection
 from OpenSearch import *
 from logger import *
 from ServiceCatalogConfig import *

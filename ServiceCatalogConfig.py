@@ -1,16 +1,7 @@
 from logger import *
-from taskcat.testing import CFNTest
-from taskcat._tui import TerminalPrinter
-from datetime import datetime
-import logging
 import boto3
 from botocore.config import Config
-import pymongo
-import urllib.parse
-import botocore
-import time
 import json
-from typing import List, Set, Tuple
 
 my_config = Config(
     # Optionally lets you specify a region other than your default.
