@@ -313,7 +313,16 @@ Resources:
         EBSEnabled: true
         VolumeSize: !Ref EBSVolumeSize
         VolumeType: gp2
-      AccessPolicies: !Sub "{ \"Version\": \"2012-10-17\", \"Statement\": [{ \"Sid\": \"\", \"Effect\": \"Allow\", \"Principal\": { \"AWS\": \"*\"}, \"Action\":[ \"es:*\"],\"Resource\": \"arn:aws:logs:${AWS::Region}:${AWS::AccountId}:domain:/${DomainName}/*\"}]}"
+#      AccessPolicies: !Sub "{ \"Version\": \"2012-10-17\", \"Statement\": [{ \"Sid\": \"\", \"Effect\": \"Allow\", \"Principal\": { \"AWS\": \"*\"}, \"Action\":[ \"es:*\"],\"Resource\": \"arn:aws:logs:${AWS::Region}:${AWS::AccountId}:domain:/${DomainName}/*\"}]}"
+      AccessPolicies:
+        Version: '2012-10-17'
+        Statement:
+          -
+            Effect: 'Allow'
+            Principal:
+              AWS: '*'
+            Action: 'es:*'
+            Resource: 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:domain:/${DomainName}/*'    
       CognitoOptions:
         Enabled: false
       NodeToNodeEncryptionOptions:
@@ -390,7 +399,16 @@ Resources:
         EBSEnabled: true
         VolumeSize: !Ref EBSVolumeSize
         VolumeType: gp2
-      AccessPolicies: !Sub "{ \"Version\": \"2012-10-17\", \"Statement\": [{ \"Sid\": \"\", \"Effect\": \"Allow\", \"Principal\": { \"AWS\": \"*\"}, \"Action\":[ \"es:*\"],\"Resource\": \"arn:aws:logs:${AWS::Region}:${AWS::AccountId}:domain:/${DomainName}/*\"}]}"
+#      AccessPolicies: !Sub "{ \"Version\": \"2012-10-17\", \"Statement\": [{ \"Sid\": \"\", \"Effect\": \"Allow\", \"Principal\": { \"AWS\": \"*\"}, \"Action\":[ \"es:*\"],\"Resource\": \"arn:aws:logs:${AWS::Region}:${AWS::AccountId}:domain:/${DomainName}/*\"}]}"
+      AccessPolicies:
+        Version: '2012-10-17'
+        Statement:
+          -
+            Effect: 'Allow'
+            Principal:
+              AWS: '*'
+            Action: 'es:*'
+            Resource: 'arn:aws:logs:${AWS::Region}:${AWS::AccountId}:domain:/${DomainName}/*'  
       LogPublishingOptions:
         ES_APPLICATION_LOGS:
           CloudWatchLogsLogGroupArn:
