@@ -26,7 +26,7 @@ Resources:
 #       - Key: KMSArnForSecretManager
 #         Value: !Sub 'arn:aws:kms:${AWS::Region}:${AWS::AccountId}:alias/sc/${AWS::AccountId}/regression-testing' 
        - Key: opSecurityGroup
-         Value: ''
+         Value: 'sg-01bd4023a6d8516ab'
        - Key: PSsmSubnetIds
          Value: '/platform/sharedvpc/private_subnets'
 
